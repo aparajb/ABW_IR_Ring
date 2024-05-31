@@ -19,7 +19,7 @@
 #define COLOUR_SENSOR_H
 
 #include "Arduino.h"
-#include "BaseSensor.h"
+#include "Base_Sensor.h"
 
 
 // Colors (detected & LED (except NONE for this last one)) expected values

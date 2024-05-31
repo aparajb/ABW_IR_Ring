@@ -20,7 +20,6 @@
 #ifndef BASESENSOR_H
 #define BASESENSOR_H
 
-#include "global.h"
 #include "lego_uart.h"
 #include "Arduino.h"
 
