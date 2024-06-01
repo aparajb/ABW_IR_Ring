@@ -20,7 +20,7 @@
 /**
  * @brief Default constructor
  */
-ColorSensor::ColorSensor(){
+Colour_Sensor::Colour_Sensor(){
     m_defaultIntVal = new uint8_t(0);
     uint16_t defaultRGB[3]      = { 0, 0, 0 };
     uint16_t defaultHSV[3]      = { 0, 0, 0 };
@@ -45,7 +45,7 @@ ColorSensor::ColorSensor(){
  * @param pRGB_I Pointer to Raw values of Red Green Blue channels. See m_sensorRGB_I.
  * @param pHSV Pointer to Raw values of Hue, Saturation, Value/Brightness channels. See m_sensorHSV.
  */
-ColorSensor::ColorSensor(uint8_t *pSensorColor, uint16_t *pRGB_I, uint16_t *pHSV){
+Colour_Sensor::Colour_Sensor(uint8_t *pSensorColor, uint16_t *pRGB_I, uint16_t *pHSV){
     m_defaultIntVal = new uint8_t(0);
     uint8_t LEDBrightnesses[3] = { 0, 0, 0 };
 
@@ -66,7 +66,7 @@ ColorSensor::ColorSensor(uint8_t *pSensorColor, uint16_t *pRGB_I, uint16_t *pHSV
 /**
  * @brief Destructor
  */
-ColorSensor::~ColorSensor(){
+Colour_Sensor::~Colour_Sensor(){
     delete m_defaultIntVal;
     // TODO: Should also implement copy constructor or copy assignment operator
 }
@@ -78,7 +78,7 @@ ColorSensor::~ColorSensor(){
  *      TODO: We use an array of size 3 (4th channel is unknown).
  *      Continuous values 0..1023.
  */
-void ColorSensor::setSensorRGB_I(uint16_t *pData){
+void Colour_Sensor::setSensorRGB_I(uint16_t *pData){
     this->m_sensorRGB_I = pData;
 }
 
@@ -88,7 +88,7 @@ void ColorSensor::setSensorRGB_I(uint16_t *pData){
  * @param pData Expected value pointed is an array of uint16_t size 3.
  *      Continuous values 0..1023.
  */
-void ColorSensor::setSensorHSV(uint16_t *pData){
+void Colour_Sensor::setSensorHSV(uint16_t *pData){
     this->m_sensorHSV = pData;
 }
 
@@ -100,7 +100,7 @@ void ColorSensor::setSensorHSV(uint16_t *pData){
  *      COLOR_NONE, COLOR_BLACK, COLOR_BLUE, COLOR_LIGHTBLUE, COLOR_GREEN,
  *      COLOR_YELLOW, COLOR_RED, COLOR_PURPLE, COLOR_WHITE.
  */
-void ColorSensor::setSensorColor(uint8_t *pData){
+void Colour_Sensor::setSensorColor(uint8_t *pData){
     // Free constructor's value
     this->m_sensorColor = pData;
 }
@@ -109,7 +109,7 @@ void ColorSensor::setSensorColor(uint8_t *pData){
 /**
  * @brief Set callback receiving m_LEDBrightnesses when modified by the hub.
  */
-void ColorSensor::setLEDBrightnessesCallback(void(pfunc)(const uint8_t*)){
+void Colour_Sensor::setLEDBrightnessesCallback(void(pfunc)(const uint8_t*)){
     this->m_pLEDBrightnessesfunc = pfunc;
 }
 
@@ -119,7 +119,7 @@ void ColorSensor::setLEDBrightnessesCallback(void(pfunc)(const uint8_t*)){
  * @param pData Pointer to reflected light (from clear channel value or
  *      calculations based on rgb channels). Continuous values 0..100.
  */
-void ColorSensor::setSensorReflectedLight(uint8_t *pData){
+void Colour_Sensor::setSensorReflectedLight(uint8_t *pData){
     this->m_reflectedLight = pData;
 }
 
@@ -129,7 +129,7 @@ void ColorSensor::setSensorReflectedLight(uint8_t *pData){
  * @param pData Pointer to ambient light based on lux value.
  *      Continuous values 0..100.
  */
-void ColorSensor::setSensorAmbientLight(uint8_t *pData){
+void Colour_Sensor::setSensorAmbientLight(uint8_t *pData){
     this->m_ambientLight = pData;
 }
 
@@ -138,124 +138,124 @@ void ColorSensor::setSensorAmbientLight(uint8_t *pData){
  * @brief Send initialization sequences for the current sensor.
  * @see https://github.com/pybricks/pybricks-micropython/lib/pbio/test/src/uartdev.c
  */
-void ColorSensor::commSendInitSequence(){
+void Colour_Sensor::commSendInitSequence(){
     // TODO: put all this strings into flash via PROGMEM
     // Initialize uart
     // delay(5000);
-    SerialTTL.begin(2400);
+    Serial1.begin(2400);
     delay(100);
 
-    SerialTTL.write("\x40\x3D\x82", 3);                              // Type ID: 0x3D
-    SerialTTL.write("\x51\x07\x07\x09\x00\xA7", 6);                  // CMD_MODES: 8 modes, 8 views, Ext. Modes: 10 modes, 1 view
-    SerialTTL.write("\x52\x00\xC2\x01\x00\x6E", 6);                  // CMD_SPEED: 115200
-    SerialTTL.write("\x5F\x00\x00\x00\x10\x00\x00\x00\x10\xA0", 10); // CMD_VERSION: fw-version: 1.0.0.0, hw-version: 1.0.0.0
-    SerialTTL.flush();
+    Serial1.write("\x40\x3D\x82", 3);                              // Type ID: 0x3D
+    Serial1.write("\x51\x07\x07\x09\x00\xA7", 6);                  // CMD_MODES: 8 modes, 8 views, Ext. Modes: 10 modes, 1 view
+    Serial1.write("\x52\x00\xC2\x01\x00\x6E", 6);                  // CMD_SPEED: 115200
+    Serial1.write("\x5F\x00\x00\x00\x10\x00\x00\x00\x10\xA0", 10); // CMD_VERSION: fw-version: 1.0.0.0, hw-version: 1.0.0.0
+    Serial1.flush();
     delay(10);
     // Mode 9:
-    SerialTTL.write("\xA1\x20\x43\x41\x4C\x49\x42\x00\x40\x40\x00\x00\x04\x84\x00\x00\x00\x00\xBB", 19); // Name: "CALIB"+ flags
-    SerialTTL.write("\x99\x21\x00\x00\x00\x00\x00\xFF\x7F\x47\x80", 11);                                 // Range: 0 to 65535
-    SerialTTL.write("\x99\x22\x00\x00\x00\x00\x00\x00\xC8\x42\xCE", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x99\x23\x00\x00\x00\x00\x00\xFF\x7F\x47\x82", 11);                                 // Si Range: 0 to 65535
-    SerialTTL.write("\x81\x24\x00\x5A", 4);                                                              // Si Symbol: NULL
-    SerialTTL.write("\x89\x25\x00\x00\x53", 5);                                                          // No additional info mapping flag
-    SerialTTL.write("\x91\xA0\x07\x01\x05\x00\xCD", 7);                                                  // Format: 7 uint16, each 5 chars, 0 decimal
-    SerialTTL.flush();
+    Serial1.write("\xA1\x20\x43\x41\x4C\x49\x42\x00\x40\x40\x00\x00\x04\x84\x00\x00\x00\x00\xBB", 19); // Name: "CALIB"+ flags
+    Serial1.write("\x99\x21\x00\x00\x00\x00\x00\xFF\x7F\x47\x80", 11);                                 // Range: 0 to 65535
+    Serial1.write("\x99\x22\x00\x00\x00\x00\x00\x00\xC8\x42\xCE", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x99\x23\x00\x00\x00\x00\x00\xFF\x7F\x47\x82", 11);                                 // Si Range: 0 to 65535
+    Serial1.write("\x81\x24\x00\x5A", 4);                                                              // Si Symbol: NULL
+    Serial1.write("\x89\x25\x00\x00\x53", 5);                                                          // No additional info mapping flag
+    Serial1.write("\x91\xA0\x07\x01\x05\x00\xCD", 7);                                                  // Format: 7 uint16, each 5 chars, 0 decimal
+    Serial1.flush();
     delay(10);
     // Mode 8:
-    SerialTTL.write("\xA0\x20\x44\x45\x42\x55\x47\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xEE", 19); // Name: "DEBUG" + flags
-    SerialTTL.write("\x98\x21\x00\x00\x00\x00\x00\xFF\x7F\x47\x81", 11);                                 // Range: 0 to 65535
-    SerialTTL.write("\x98\x22\x00\x00\x00\x00\x00\x00\xC8\x42\xCF", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x98\x23\x00\x00\x00\x00\x00\xFF\x7F\x47\x83", 11);                                 // Si Range: 0 to 65535
-    SerialTTL.write("\x90\x24\x52\x41\x57\x00\x0F", 7);                                                  // Si Symbol: RAW
-    SerialTTL.write("\x88\x25\x10\x00\x42", 5);                                                          // input_flags: Absolute, output_flags: None
-    SerialTTL.write("\x90\xA0\x04\x01\x04\x00\xCE", 7);                                                  // Format: 4 uint16, each 4 chars, 0 decimal
-    SerialTTL.flush();
+    Serial1.write("\xA0\x20\x44\x45\x42\x55\x47\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xEE", 19); // Name: "DEBUG" + flags
+    Serial1.write("\x98\x21\x00\x00\x00\x00\x00\xFF\x7F\x47\x81", 11);                                 // Range: 0 to 65535
+    Serial1.write("\x98\x22\x00\x00\x00\x00\x00\x00\xC8\x42\xCF", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x98\x23\x00\x00\x00\x00\x00\xFF\x7F\x47\x83", 11);                                 // Si Range: 0 to 65535
+    Serial1.write("\x90\x24\x52\x41\x57\x00\x0F", 7);                                                  // Si Symbol: RAW
+    Serial1.write("\x88\x25\x10\x00\x42", 5);                                                          // input_flags: Absolute, output_flags: None
+    Serial1.write("\x90\xA0\x04\x01\x04\x00\xCE", 7);                                                  // Format: 4 uint16, each 4 chars, 0 decimal
+    Serial1.flush();
     delay(10);
     // Mode 7:
-    SerialTTL.write("\xA7\x00\x53\x48\x53\x56\x00\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\x86", 19); // Name: "SHSV" + flags
-    SerialTTL.write("\x9F\x01\x00\x00\x00\x00\x00\x00\xB4\x43\x96", 11);                                 // Range: 0 to 360
-    SerialTTL.write("\x9F\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xE8", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x9F\x03\x00\x00\x00\x00\x00\x00\xB4\x43\x94", 11);                                 // Si Range: 0 to 360
-    SerialTTL.write("\x97\x04\x52\x41\x57\x00\x28", 7);                                                  // Si Symbol: RAW
-    SerialTTL.write("\x8F\x05\x10\x00\x65", 5);                                                          // input_flags: Absolute, output_flags: None
-    SerialTTL.write("\x97\x80\x04\x01\x04\x00\xE9", 7);                                                  // Format: 4 uint16, each 4 chars, 0 decimal
-    SerialTTL.flush();
+    Serial1.write("\xA7\x00\x53\x48\x53\x56\x00\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\x86", 19); // Name: "SHSV" + flags
+    Serial1.write("\x9F\x01\x00\x00\x00\x00\x00\x00\xB4\x43\x96", 11);                                 // Range: 0 to 360
+    Serial1.write("\x9F\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xE8", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x9F\x03\x00\x00\x00\x00\x00\x00\xB4\x43\x94", 11);                                 // Si Range: 0 to 360
+    Serial1.write("\x97\x04\x52\x41\x57\x00\x28", 7);                                                  // Si Symbol: RAW
+    Serial1.write("\x8F\x05\x10\x00\x65", 5);                                                          // input_flags: Absolute, output_flags: None
+    Serial1.write("\x97\x80\x04\x01\x04\x00\xE9", 7);                                                  // Format: 4 uint16, each 4 chars, 0 decimal
+    Serial1.flush();
     delay(10);
     // Mode 6:
-    SerialTTL.write("\xA6\x00\x48\x53\x56\x00\x00\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xD4", 19); // Name: "HSV" + flags
-    SerialTTL.write("\x9E\x01\x00\x00\x00\x00\x00\x00\xB4\x43\x97", 11);                                 // Range: 0 to 360
-    SerialTTL.write("\x9E\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xE9", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x9E\x03\x00\x00\x00\x00\x00\x00\xB4\x43\x95", 11);                                 // Si Range: 0 to 360
-    SerialTTL.write("\x96\x04\x52\x41\x57\x00\x29", 7);                                                  // Si Symbol: RAW
-    SerialTTL.write("\x8E\x05\x10\x00\x64", 5);                                                          // input_flags: Absolute, output_flags: None
-    SerialTTL.write("\x96\x80\x03\x01\x04\x00\xEF", 7);                                                  // Format: 3 uint16, each 4 chars, 0 decimal
-    SerialTTL.flush();
+    Serial1.write("\xA6\x00\x48\x53\x56\x00\x00\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xD4", 19); // Name: "HSV" + flags
+    Serial1.write("\x9E\x01\x00\x00\x00\x00\x00\x00\xB4\x43\x97", 11);                                 // Range: 0 to 360
+    Serial1.write("\x9E\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xE9", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x9E\x03\x00\x00\x00\x00\x00\x00\xB4\x43\x95", 11);                                 // Si Range: 0 to 360
+    Serial1.write("\x96\x04\x52\x41\x57\x00\x29", 7);                                                  // Si Symbol: RAW
+    Serial1.write("\x8E\x05\x10\x00\x64", 5);                                                          // input_flags: Absolute, output_flags: None
+    Serial1.write("\x96\x80\x03\x01\x04\x00\xEF", 7);                                                  // Format: 3 uint16, each 4 chars, 0 decimal
+    Serial1.flush();
     delay(10);
     // Mode 5:
-    SerialTTL.write("\xA5\x00\x52\x47\x42\x20\x49\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xA4", 19); // Name: "RGB I" + flags
-    SerialTTL.write("\x9D\x01\x00\x00\x00\x00\x00\x00\x80\x44\xA7", 11);                                 // Range: 0 to 1024
-    SerialTTL.write("\x9D\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEA", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x9D\x03\x00\x00\x00\x00\x00\x00\x80\x44\xA5", 11);                                 // Si Range: 0 to 1024
-    SerialTTL.write("\x95\x04\x52\x41\x57\x00\x2A", 7);                                                  // Si Symbol: RAW
-    SerialTTL.write("\x8D\x05\x10\x00\x67", 5);                                                          // input_flags: Absolute, output_flags: None
-    SerialTTL.write("\x95\x80\x04\x01\x04\x00\xEB", 7);                                                  // Format: 4 uint16, each 4 chars, 0 decimal
-    SerialTTL.flush();
+    Serial1.write("\xA5\x00\x52\x47\x42\x20\x49\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xA4", 19); // Name: "RGB I" + flags
+    Serial1.write("\x9D\x01\x00\x00\x00\x00\x00\x00\x80\x44\xA7", 11);                                 // Range: 0 to 1024
+    Serial1.write("\x9D\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEA", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x9D\x03\x00\x00\x00\x00\x00\x00\x80\x44\xA5", 11);                                 // Si Range: 0 to 1024
+    Serial1.write("\x95\x04\x52\x41\x57\x00\x2A", 7);                                                  // Si Symbol: RAW
+    Serial1.write("\x8D\x05\x10\x00\x67", 5);                                                          // input_flags: Absolute, output_flags: None
+    Serial1.write("\x95\x80\x04\x01\x04\x00\xEB", 7);                                                  // Format: 4 uint16, each 4 chars, 0 decimal
+    Serial1.flush();
     delay(10);
     // Mode 4:
-    SerialTTL.write("\xA4\x00\x52\x52\x45\x46\x4C\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xD4", 19); // Name: "RREFL" + flags
-    SerialTTL.write("\x9C\x01\x00\x00\x00\x00\x00\x00\x80\x44\xA6", 11);                                 // (reflected light RAW)
-    SerialTTL.write("\x9C\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEB", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x9C\x03\x00\x00\x00\x00\x00\x00\x80\x44\xA4", 11);                                 // Si Range: 0 to 1024
-    SerialTTL.write("\x94\x04\x52\x41\x57\x00\x2B", 7);                                                  // Si Symbol: RAW
-    SerialTTL.write("\x8C\x05\x10\x00\x66", 5);                                                          // input_flags: Absolute, output_flags: None
-    SerialTTL.write("\x94\x80\x02\x01\x04\x00\xEC", 7);                                                  // Format: 2 uint16, each 4 chars, 0 decimal
-    SerialTTL.flush();
+    Serial1.write("\xA4\x00\x52\x52\x45\x46\x4C\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xD4", 19); // Name: "RREFL" + flags
+    Serial1.write("\x9C\x01\x00\x00\x00\x00\x00\x00\x80\x44\xA6", 11);                                 // (reflected light RAW)
+    Serial1.write("\x9C\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEB", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x9C\x03\x00\x00\x00\x00\x00\x00\x80\x44\xA4", 11);                                 // Si Range: 0 to 1024
+    Serial1.write("\x94\x04\x52\x41\x57\x00\x2B", 7);                                                  // Si Symbol: RAW
+    Serial1.write("\x8C\x05\x10\x00\x66", 5);                                                          // input_flags: Absolute, output_flags: None
+    Serial1.write("\x94\x80\x02\x01\x04\x00\xEC", 7);                                                  // Format: 2 uint16, each 4 chars, 0 decimal
+    Serial1.flush();
     delay(10);
     // Mode 3:
-    SerialTTL.write("\xA3\x00\x4C\x49\x47\x48\x54\x00\x40\x00\x00\x00\x05\x04\x00\x00\x00\x00\x43", 19); // Name: "LIGHT" + flags
-    SerialTTL.write("\x9B\x01\x00\x00\x00\x00\x00\x00\xC8\x42\xEF", 11);                                 // Range: 0 to 100
-    SerialTTL.write("\x9B\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEC", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x9B\x03\x00\x00\x00\x00\x00\x00\xC8\x42\xED", 11);                                 // Si Range: 0 to 100
-    SerialTTL.write("\x93\x04\x50\x43\x54\x00\x2F", 7);                                                  // Si Symbol: PCT
-    SerialTTL.write("\x8B\x05\x00\x10\x61", 5);                                                          // input_flags: None, output_flags: Absolute
-    SerialTTL.write("\x93\x80\x03\x00\x03\x00\xEC", 7);                                                  // Format: 3 uint8, shows 3 chars, 0 decimals
-    SerialTTL.flush();
+    Serial1.write("\xA3\x00\x4C\x49\x47\x48\x54\x00\x40\x00\x00\x00\x05\x04\x00\x00\x00\x00\x43", 19); // Name: "LIGHT" + flags
+    Serial1.write("\x9B\x01\x00\x00\x00\x00\x00\x00\xC8\x42\xEF", 11);                                 // Range: 0 to 100
+    Serial1.write("\x9B\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEC", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x9B\x03\x00\x00\x00\x00\x00\x00\xC8\x42\xED", 11);                                 // Si Range: 0 to 100
+    Serial1.write("\x93\x04\x50\x43\x54\x00\x2F", 7);                                                  // Si Symbol: PCT
+    Serial1.write("\x8B\x05\x00\x10\x61", 5);                                                          // input_flags: None, output_flags: Absolute
+    Serial1.write("\x93\x80\x03\x00\x03\x00\xEC", 7);                                                  // Format: 3 uint8, shows 3 chars, 0 decimals
+    Serial1.flush();
     delay(10);
     // Mode 2:
-    SerialTTL.write("\xA2\x00\x41\x4D\x42\x49\x00\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\x9A", 19); // Name: "AMBI" + flags
-    SerialTTL.write("\x9A\x01\x00\x00\x00\x00\x00\x00\xC8\x42\xEE", 11);                                 // Range: 0 to 100
-    SerialTTL.write("\x9A\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xED", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x9A\x03\x00\x00\x00\x00\x00\x00\xC8\x42\xEC", 11);                                 // Si Range: 0 to 100
-    SerialTTL.write("\x92\x04\x50\x43\x54\x00\x2E", 7);                                                  // Si Symbol: PCT
-    SerialTTL.write("\x8A\x05\x30\x00\x40", 5);                                                          // input_flags: Absolute,N/A, output_flags: None
-    SerialTTL.write("\x92\x80\x01\x00\x03\x00\xEF", 7);                                                  // Format: 1 uint8, shows 3 chars, 0 decimals
-    SerialTTL.flush();
+    Serial1.write("\xA2\x00\x41\x4D\x42\x49\x00\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\x9A", 19); // Name: "AMBI" + flags
+    Serial1.write("\x9A\x01\x00\x00\x00\x00\x00\x00\xC8\x42\xEE", 11);                                 // Range: 0 to 100
+    Serial1.write("\x9A\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xED", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x9A\x03\x00\x00\x00\x00\x00\x00\xC8\x42\xEC", 11);                                 // Si Range: 0 to 100
+    Serial1.write("\x92\x04\x50\x43\x54\x00\x2E", 7);                                                  // Si Symbol: PCT
+    Serial1.write("\x8A\x05\x30\x00\x40", 5);                                                          // input_flags: Absolute,N/A, output_flags: None
+    Serial1.write("\x92\x80\x01\x00\x03\x00\xEF", 7);                                                  // Format: 1 uint8, shows 3 chars, 0 decimals
+    Serial1.flush();
     delay(10);
     // Mode 1:
-    SerialTTL.write("\xA1\x00\x52\x45\x46\x4C\x54\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xD7", 19); // Name: "REFLT" + flags
-    SerialTTL.write("\x99\x01\x00\x00\x00\x00\x00\x00\xC8\x42\xED", 11);                                 // Range: 0 to 100
-    SerialTTL.write("\x99\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEE", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x99\x03\x00\x00\x00\x00\x00\x00\xC8\x42\xEF", 11);                                 // Si Range: 0 to 100
-    SerialTTL.write("\x91\x04\x50\x43\x54\x00\x2D", 7);                                                  // Si Symbol: PCT
-    SerialTTL.write("\x89\x05\x30\x00\x43", 5);                                                          // input_flags: Absolute,N/A, output_flags: None
-    SerialTTL.write("\x91\x80\x01\x00\x03\x00\xEC", 7);                                                  // Format: 1 uint8, shows 3 chars, 0 decimals
-    SerialTTL.flush();
+    Serial1.write("\xA1\x00\x52\x45\x46\x4C\x54\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xD7", 19); // Name: "REFLT" + flags
+    Serial1.write("\x99\x01\x00\x00\x00\x00\x00\x00\xC8\x42\xED", 11);                                 // Range: 0 to 100
+    Serial1.write("\x99\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEE", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x99\x03\x00\x00\x00\x00\x00\x00\xC8\x42\xEF", 11);                                 // Si Range: 0 to 100
+    Serial1.write("\x91\x04\x50\x43\x54\x00\x2D", 7);                                                  // Si Symbol: PCT
+    Serial1.write("\x89\x05\x30\x00\x43", 5);                                                          // input_flags: Absolute,N/A, output_flags: None
+    Serial1.write("\x91\x80\x01\x00\x03\x00\xEC", 7);                                                  // Format: 1 uint8, shows 3 chars, 0 decimals
+    Serial1.flush();
     delay(10);
     // Mode 0:
-    SerialTTL.write("\xA0\x00\x43\x4F\x4C\x4F\x52\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xC2", 19); // Name: "COLOR" + flags
-    SerialTTL.write("\x98\x01\x00\x00\x00\x00\x00\x00\x20\x41\x07", 11);                                 // Range: 0 to 10
-    SerialTTL.write("\x98\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEF", 11);                                 // PCT Range: 0 to 100
-    SerialTTL.write("\x98\x03\x00\x00\x00\x00\x00\x00\x20\x41\x05", 11);                                 // Si Range: 0 to 10
-    SerialTTL.write("\x90\x04\x49\x44\x58\x00\x3E", 7);                                                  // Si Symbol: "IDX"
-    SerialTTL.write("\x88\x05\xE4\x00\x96", 5);                                                          // input_flags: Discrete,N/A,Func mapping 2.0+,NULL, output_flags: None
-    SerialTTL.write("\x90\x80\x01\x00\x02\x00\xEC", 7);                                                  // Format: 1 uint8 - show 2 chars, 0 decimals
-    SerialTTL.write("\x88\x06\x63\x00\x12", 5);                                                          // Combinable modes: 0:Color, 1:Reflection, 5: RGB I, 6:HSV
+    Serial1.write("\xA0\x00\x43\x4F\x4C\x4F\x52\x00\x40\x00\x00\x00\x04\x84\x00\x00\x00\x00\xC2", 19); // Name: "COLOR" + flags
+    Serial1.write("\x98\x01\x00\x00\x00\x00\x00\x00\x20\x41\x07", 11);                                 // Range: 0 to 10
+    Serial1.write("\x98\x02\x00\x00\x00\x00\x00\x00\xC8\x42\xEF", 11);                                 // PCT Range: 0 to 100
+    Serial1.write("\x98\x03\x00\x00\x00\x00\x00\x00\x20\x41\x05", 11);                                 // Si Range: 0 to 10
+    Serial1.write("\x90\x04\x49\x44\x58\x00\x3E", 7);                                                  // Si Symbol: "IDX"
+    Serial1.write("\x88\x05\xE4\x00\x96", 5);                                                          // input_flags: Discrete,N/A,Func mapping 2.0+,NULL, output_flags: None
+    Serial1.write("\x90\x80\x01\x00\x02\x00\xEC", 7);                                                  // Format: 1 uint8 - show 2 chars, 0 decimals
+    Serial1.write("\x88\x06\x63\x00\x12", 5);                                                          // Combinable modes: 0:Color, 1:Reflection, 5: RGB I, 6:HSV
     // Unknown
-    SerialTTL.write("\xA0\x08\x00\x3C\x00\x31\x0A\x47\x39\x32\x35\x33\x39\x39\x00\x00\x00\x00\x1A", 19);
-    SerialTTL.flush();
+    Serial1.write("\xA0\x08\x00\x3C\x00\x31\x0A\x47\x39\x32\x35\x33\x39\x39\x00\x00\x00\x00\x1A", 19);
+    Serial1.flush();
     delay(10);
-    SerialTTL.write("\x04", 1);
-    SerialTTL.flush();
+    Serial1.write("\x04", 1);
+    Serial1.flush();
     delay(5);
 }
 
@@ -267,16 +267,16 @@ void ColorSensor::commSendInitSequence(){
  *      queries from the hub takes longer than 200ms, a disconnection
  *      will be performed here.
  */
-void ColorSensor::handleModes(){
-    if (SerialTTL.available() == 0)
+void Colour_Sensor::handleModes(){
+    if (Serial1.available() == 0)
         return;
 
     unsigned char header;
     unsigned char mode;
-    header = SerialTTL.read();
+    header = Serial1.read();
 
-    DEBUG_PRINT(F("<\tHeader "));
-    DEBUG_PRINTLN(header, HEX);
+    Serial.print("<\tHeader ");
+    Serial.println(header, HEX);
 
     if (header == 0x02) { // NACK
         m_lastAckTick = millis();
@@ -288,38 +288,38 @@ void ColorSensor::handleModes(){
             // this->sensorColorMode();
     } else if (header == 0x43) {
         // "Get value" commands (3 bytes message: header, mode, checksum)
-        size_t ret = SerialTTL.readBytes(m_rxBuf, 2);
+        size_t ret = Serial1.readBytes(m_rxBuf, 2);
         if (ret < 2) {
             // check if all expected bytes are received without timeout
-            DEBUG_PRINT(F("incomplete 0x43 message"));
+            Serial.print("incomplete 0x43 message");
             return;
         }
         mode = m_rxBuf[0];
-        DEBUG_PRINT(F("<\tAsked mode "));
-        DEBUG_PRINTLN(mode);
+        Serial.print("<\tAsked mode ");
+        Serial.println(mode);
 
         this->m_currentExtMode = (mode < 8) ? EXT_MODE_0 : EXT_MODE_8;
 
         switch (mode) {
-            case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__COLOR:
+            case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__COLOR:
                 this->sensorColorMode();
                 break;
-            case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__REFLT:
+            case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__REFLT:
                 this->sensorReflectedLightMode();
                 break;
-            case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__AMBI:
+            case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__AMBI:
                 this->sensorAmbientLight();
                 break;
-            //case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__RREFL:
+            //case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__RREFL:
             //    this->sensorReflectedLightMode();
             //    break;
-            case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__RGB_I:
+            case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__RGB_I:
                 this->sensorRGB_IMode();
                 break;
-            case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__HSV:
+            case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__HSV:
                 this->sensorHSVMode();
                 break;
-            // case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__SHSV:
+            // case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__SHSV:
             //    this->sensorSHSVMode();
             //    break;
             // #ifdef DEBUG
@@ -329,8 +329,8 @@ void ColorSensor::handleModes(){
             //     break;
             // #endif
             default:
-                INFO_PRINT(F("unknown R mode: "));
-                INFO_PRINTLN(mode, HEX);
+                Serial.print("unknown R mode: ");
+                Serial.println(mode, HEX);
                 break;
         }
     } else if (header == 0x46) {
@@ -340,7 +340,7 @@ void ColorSensor::handleModes(){
         // - The LUMP_MSG_TYPE_DATA itself with its data as value
 
         // Get data1, checksum1, header2 (header of the next message)
-        size_t ret = SerialTTL.readBytes(m_rxBuf, 3);
+        size_t ret = Serial1.readBytes(m_rxBuf, 3);
         if (ret < 3)
             // check if all expected bytes are received without timeout
             return;
@@ -354,17 +354,17 @@ void ColorSensor::handleModes(){
 
         // Read the remaining bytes after the header (cheksum included)
         // Data will be in the indexes [0;msg_size-2]
-        ret = SerialTTL.readBytes(m_rxBuf, msg_size - 1);
-        if (_(signed)(ret) != msg_size - 1)
+        ret = Serial1.readBytes(m_rxBuf, msg_size - 1);
+        if ((signed)(ret) != msg_size - 1)
             return;
 
         switch(mode) {
-            case ColorSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__LIGHT:
+            case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__LIGHT:
                 this->setLEDBrightnessesMode();
                 break;
             default:
-                INFO_PRINT(F("unknown W mode: "));
-                INFO_PRINTLN(mode, HEX);
+                Serial.print("unknown W mode: ");
+                Serial.println(mode, HEX);
                 break;
         }
     } else if (header == 0x4C) {
@@ -375,7 +375,7 @@ void ColorSensor::handleModes(){
         // and discard the message if it doesn't match.
 
         // Get data (4 bytes message)
-        size_t ret = SerialTTL.readBytes(m_rxBuf, 3);
+        size_t ret = Serial1.readBytes(m_rxBuf, 3);
         if (ret < 3) {
             // check if all expected bytes are received without timeout
             return;
@@ -397,10 +397,10 @@ void ColorSensor::handleModes(){
         // and discard the message if it doesn't match.
 
         // Get data (10 bytes message)
-        size_t ret = SerialTTL.readBytes(m_rxBuf, 9);
+        size_t ret = Serial1.readBytes(m_rxBuf, 9);
         if (ret < 9) {
             // check if all expected bytes are received without timeout
-            DEBUG_PRINT(F("incomplete 0x5C message"));
+            Serial.print("incomplete 0x5C message");
             return;
         }
 
@@ -420,7 +420,7 @@ void ColorSensor::handleModes(){
  *      Should be used as a first response after a NACK, and before every responses for
  *      modes >= 8.
  */
-void ColorSensor::extendedModeInfoResponse(){
+void Colour_Sensor::extendedModeInfoResponse(){
     // extended mode info
     m_txBuf[0] = 0x46;                      // header type LUMP_MSG_TYPE_CMD, cmd LUMP_CMD_EXT_MODE, size 3
     m_txBuf[1] = this->m_currentExtMode;    // current EXT_MODE
@@ -433,19 +433,19 @@ void ColorSensor::extendedModeInfoResponse(){
  *      This sensor has 3 built-in lights: 0: left, 1: bottom, 2: right.
  *      Set the brightness of each light.
  */
-void ColorSensor::setLEDBrightnessesMode(){
+void Colour_Sensor::setLEDBrightnessesMode() {
     // Mode 3 (write mode)
     // Expect brightness values (3 int8_t)
     this->m_LEDBrightnesses[0] = m_rxBuf[0];
     this->m_LEDBrightnesses[1] = m_rxBuf[1];
     this->m_LEDBrightnesses[2] = m_rxBuf[2];
 
-    DEBUG_PRINT(F("LEDBrightnesses set (Left,Bottom,Right): "));
-    DEBUG_PRINT(this->m_LEDBrightnesses[0], HEX);
-    DEBUG_PRINT(F(", "));
-    DEBUG_PRINT(this->m_LEDBrightnesses[1], HEX);
-    DEBUG_PRINT(F(", "));
-    DEBUG_PRINTLN(this->m_LEDBrightnesses[2], HEX);
+    Serial.print("LEDBrightnesses set (Left,Bottom,Right): ");
+    Serial.print(this->m_LEDBrightnesses[0], HEX);
+    Serial.print(", ");
+    Serial.print(this->m_LEDBrightnesses[1], HEX);
+    Serial.print(", ");
+    Serial.println(this->m_LEDBrightnesses[2], HEX);
 
     if (this->m_pLEDBrightnessesfunc != nullptr)
         this->m_pLEDBrightnessesfunc(this->m_LEDBrightnesses);
@@ -459,7 +459,7 @@ void ColorSensor::setLEDBrightnessesMode(){
  *      COLOR_YELLOW, COLOR_RED, COLOR_PURPLE, COLOR_WHITE.
  *      See m_sensorColor.
  */
-void ColorSensor::sensorColorMode(){
+void Colour_Sensor::sensorColorMode(){
     // Mode 0
     m_txBuf[0] = 0xC0;                      // header
     m_txBuf[1] = *m_sensorColor;            // current detected color
@@ -471,7 +471,7 @@ void ColorSensor::sensorColorMode(){
  * @brief Mode 1 response (read): Send reflected light measure.
  *      See m_reflectedLight.
  */
-void ColorSensor::sensorReflectedLightMode(){
+void Colour_Sensor::sensorReflectedLightMode(){
     // Mode 1
     m_txBuf[0] = 0xC1;                      // header
     m_txBuf[1] = *this->m_reflectedLight;   // 0..100
@@ -483,7 +483,7 @@ void ColorSensor::sensorReflectedLightMode(){
  * @brief Mode 2 response (read): Send lux measure.
  *      See m_ambientLight.
  */
-void ColorSensor::sensorAmbientLight(){
+void Colour_Sensor::sensorAmbientLight(){
     // Mode 2
     m_txBuf[0] = 0xC2;                      // header
     m_txBuf[1] = *this->m_ambientLight;
@@ -496,7 +496,7 @@ void ColorSensor::sensorAmbientLight(){
  * @warning The message should be size 6, but for constraints reasons due to masks,
  *      we must stick to a size of 10 bytes.
  */
-void ColorSensor::sensorRGB_IMode(){
+void Colour_Sensor::sensorRGB_IMode(){
     // Mode 5
     m_txBuf[0] = getHeader(lump_msg_type_t::LUMP_MSG_TYPE_DATA, 5, 10); // 0xdd
     m_txBuf[1] = this->m_sensorRGB_I[0] & 0xFF;                         // Send LSB of red value
@@ -515,10 +515,10 @@ void ColorSensor::sensorRGB_IMode(){
  * @brief Mode 6 response (read): Send HSV array.
  *
  */
-void ColorSensor::sensorHSVMode(){
+void Colour_Sensor::sensorHSVMode(){
     // Mode 6
     // Send data; payload size = 6, but total msg_size = 10
-    DEBUG_PRINTLN(F("Mode 6"));
+    Serial.println("Mode 6");
 
     // Send data
     m_txBuf[0] = getHeader(lump_msg_type_t::LUMP_MSG_TYPE_DATA, 6, 10); // header: 0xde
@@ -541,7 +541,7 @@ void ColorSensor::sensorHSVMode(){
  *      Here is a custom implementation for debugging purposes.
  *      We basically send all responses to all modes.
  */
-void ColorSensor::sensorDebugMode(){
+void Colour_Sensor::sensorDebugMode(){
     // Mode 8 - Test mode
     // extended mode info
     // We are in EXT_MODE_8 because of the Mode 8 command
@@ -584,9 +584,9 @@ void ColorSensor::sensorDebugMode(){
  * @todo Parse dynamically the received packet. Have a struct that could map
  *      mode ids and values for an easier access.
  */
-void ColorSensor::defaultCombosMode(){
+void Colour_Sensor::defaultCombosMode(){
     // Send data; payload size = 8, but total msg_size = 10
-    DEBUG_PRINTLN(F("Default combos mode"));
+    Serial.println("Default combos mode");
     // Send data
     m_txBuf[0] = getHeader(lump_msg_type_t::LUMP_MSG_TYPE_DATA, 0, 10); // header: 0xd8
     m_txBuf[1] = *this->m_reflectedLight;                               // mode 1 value 0
@@ -605,7 +605,7 @@ void ColorSensor::defaultCombosMode(){
 /**
  * @brief Response to a reset combo mode query.
  */
-void ColorSensor::ackResetCombosMode(){
+void Colour_Sensor::ackResetCombosMode(){
     m_txBuf[0] = 0x44;
     m_txBuf[1] = 0x20;
     sendUARTBuffer(1);
@@ -617,7 +617,7 @@ void ColorSensor::ackResetCombosMode(){
  *      It's the same package as the one received.
  * @todo Replay the received packet instead manually setting it.
  */
-void ColorSensor::ackSetCombosMode(){
+void Colour_Sensor::ackSetCombosMode(){
     m_txBuf[0] = 0x5C;
     m_txBuf[1] = 0x25;
     m_txBuf[2] = 0x00;

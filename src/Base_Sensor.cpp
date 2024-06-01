@@ -19,7 +19,7 @@
  */
 #include "Base_Sensor.h"
 
-BaseSensor::BaseSensor() :
+Base_Sensor::Base_Sensor() :
     m_connSerialRX_pin(0),
     m_connSerialTX_pin(1),
     m_lastAckTick(0),
@@ -30,7 +30,7 @@ BaseSensor::BaseSensor() :
  * @brief Get status of connection with the hub.
  * @return bool
  */
-bool BaseSensor::isConnected(){
+bool Base_Sensor::isConnected(){
     return m_connected;
 }
 
@@ -41,7 +41,7 @@ bool BaseSensor::isConnected(){
  * @param length Length of the payload (size WITHOUT header & checksum)
  * @return Checksum byte
  */
-uint8_t BaseSensor::calcChecksum(uint8_t *pData, int length){
+uint8_t Base_Sensor::calcChecksum(uint8_t *pData, int length){
     uint8_t lRet, i;
 
     lRet = 0xFF;
@@ -56,9 +56,9 @@ uint8_t BaseSensor::calcChecksum(uint8_t *pData, int length){
  * @brief Wait until the hub is available on the serial RX line.
  *      Then, assert the TX line.
  */
-void BaseSensor::commWaitForHubIdle(){
+void Base_Sensor::commWaitForHubIdle(){
     // Disable uart: manual control TX and RX pins
-    SerialTTL.end();
+    Serial1.end();
 
     unsigned long idletick;
 
@@ -95,8 +95,8 @@ void BaseSensor::commWaitForHubIdle(){
  *          - Wait ACK during 2s
  *          - Start UART connection at 115200 bauds
  */
-void BaseSensor::connectToHub() {
-    DEBUG_PRINTLN("INIT SENSOR");
+void Base_Sensor::connectToHub() {
+    Serial.println("INIT SENSOR");
 
     // Wait for HUB to idle it's TX pin (idle = High)
     // TODO: ces bidouilles émettent b'\x00\x00' avant tout choses sur la ligne série !!
@@ -109,12 +109,12 @@ void BaseSensor::connectToHub() {
     // Check if the hub send a ACK
     unsigned long currenttime = starttime;
     while ((currenttime - starttime) < 2000) {
-        if (SerialTTL.available() > 0) {
+        if (Serial1.available() > 0) {
             // read the incoming byte
-            unsigned char dat = SerialTTL.read();
+            unsigned char dat = Serial1.read();
             if (dat == 0x04) { // ACK
-                //DEBUG_PRINTLN("Connection established !");
-                SerialTTL.begin(115200);
+                //Serial.println("Connection established !");
+                Serial1.begin(115200);
                 m_connected   = true;
                 m_lastAckTick = millis();
                 break;
@@ -133,7 +133,7 @@ void BaseSensor::connectToHub() {
  *      This function is declared as virtual because connectToHub uses it
  *      and must use the derived method, sepcific of a sensor.
  */
-void BaseSensor::commSendInitSequence(){}
+void Base_Sensor::commSendInitSequence(){}
 
 
 /**
@@ -144,7 +144,7 @@ void BaseSensor::commSendInitSequence(){}
  *      queries from the hub takes longer than 200ms, a disconnection
  *      will be performed here.
  */
-void BaseSensor::handleModes(){}
+void Base_Sensor::handleModes(){}
 
 
 /**
@@ -154,7 +154,7 @@ void BaseSensor::handleModes(){}
  *      If true, the device must go in reset mode by setting the m_connected
  *      boolean to false.
  */
-void BaseSensor::process(){
+void Base_Sensor::process(){
     if(!m_connected){
         this->connectToHub();
         return;
@@ -165,8 +165,8 @@ void BaseSensor::process(){
 
     // Check disconnection from the Hub and go in reset/init mode if needed
     if (millis() - m_lastAckTick > 200) {
-        INFO_PRINT(F("Disconnect; Too much time since last NACK - "));
-        INFO_PRINTLN(millis() - m_lastAckTick);
+        Serial.print("Disconnect; Too much time since last NACK - ");
+        Serial.println(millis() - m_lastAckTick);
         m_connected = false;
     }
 }
@@ -186,7 +186,7 @@ void BaseSensor::process(){
  *      to it's computation (Ex: payload of size 8 is considered of size 10).
  * @return Header byte
  */
-uint8_t BaseSensor::getHeader(
+uint8_t Base_Sensor::getHeader(
         const lump_msg_type_t& msg_type,
         const uint8_t& mode,
         const uint8_t& msg_size){
@@ -204,7 +204,7 @@ uint8_t BaseSensor::getHeader(
  * @param mode Reference See the class enumeration of modes.
  * @param msg_size Reference to message size.
  */
-void BaseSensor::parseHeader(const uint8_t& header, uint8_t& mode, uint8_t& msg_size){
+void Base_Sensor::parseHeader(const uint8_t& header, uint8_t& mode, uint8_t& msg_size){
     // Type is known to be LUMP_MSG_TYPE_DATA because of 0x46 header
     // msg_type = header & LUMP_MSG_TYPE_MASK;
     mode     = header & LUMP_MSG_CMD_MASK;
@@ -220,9 +220,9 @@ void BaseSensor::parseHeader(const uint8_t& header, uint8_t& mode, uint8_t& msg_
  * @param header
  * @return Expected size
  */
-uint8_t BaseSensor::getMsgSize(const uint8_t& header){
+uint8_t Base_Sensor::getMsgSize(const uint8_t& header){
     // Simplified version that implicitly asserts that msg_type is LUMP_MSG_TYPE_DATA
-    return _(uint8_t) ((1 << (((header) >> 3) & 0x7)) + 2);
+    return (uint8_t) ((1 << (((header) >> 3) & 0x7)) + 2);
 }
 
 
@@ -231,10 +231,10 @@ uint8_t BaseSensor::getMsgSize(const uint8_t& header){
  *      Also add the checksum of the message.
  * @param msg_size Size of the message WITHOUT header & checksum: Payload size.
  */
-void BaseSensor::sendUARTBuffer(uint8_t msg_size){
+void Base_Sensor::sendUARTBuffer(uint8_t msg_size){
     // Add checksum to the last index
     m_txBuf[msg_size + 1] = calcChecksum(this->m_txBuf, msg_size);
     // Send data (size = payload + header + checksum = payload + 2)
-    SerialTTL.write((char *)this->m_txBuf, msg_size + 2);
-    SerialTTL.flush();
+    Serial1.write((char *)this->m_txBuf, msg_size + 2);
+    Serial1.flush();
 }

@@ -22,7 +22,7 @@
 class IR_Ring {
 public:
     // Main Functions
-    IR_Ring() {}
+    IR_Ring();
     void init();
     void update();
 
@@ -33,8 +33,8 @@ public:
     
 private:
     uint16_t sensor_RGB[4];
-    ColorSensor My_Device;
-    TSSP_Array IR_Sensors;  
+    Colour_Sensor My_Device;
+    TSSP_Array IR_Sensors;
 };
 
 #endif // ABW_IR_RING_H

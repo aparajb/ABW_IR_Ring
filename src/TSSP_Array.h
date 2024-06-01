@@ -2,7 +2,7 @@
 #define TSSP_ARRAY_H
 
 #include "Arduino.h"
-#include <Config.h>
+#include "util/Config.h"
 
 class TSSP_Array {
 public:

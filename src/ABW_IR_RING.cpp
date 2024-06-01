@@ -1,15 +1,20 @@
 #include "ABW_IR_RING.h"
 
-IR_Ring::init() {
-    IR_Sensors.init();
-    My_Device.setSensorRGB_I(sensorRGB);
+IR_Ring::IR_Ring() {
+    My_Device = Colour_Sensor();
+    IR_Sensors = TSSP_Array();  
 }
 
-IR_Ring::update() {
+void IR_Ring::init() {
+    IR_Sensors.init();
+    My_Device.setSensorRGB_I(sensor_RGB);
+}
+
+void IR_Ring::update() {
     IR_Sensors.update();
-    sensorRGB[0] = IR_Sensors.get_direction_simple();
-    sensorRGB[1] = IR_Sensors.get_strength();
-    sensorRGB[2] = IR_Sensors.get_direction_advanced();
+    sensor_RGB[0] = IR_Sensors.get_direction_simple();
+    sensor_RGB[1] = IR_Sensors.get_strength();
+    sensor_RGB[2] = IR_Sensors.get_direction_advanced();
     My_Device.process();
 }
 

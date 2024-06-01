@@ -81,7 +81,7 @@
  * @param m_currentExtMode Extended mode switch for modes >= 8. Available values:
  *      EXT_MODE_0, EXT_MODE_8.
  */
-class ColorSensor : public BaseSensor {
+class Colour_Sensor : public Base_Sensor {
     // LEGO SPIKE Color Sensor modes
     // Pybricks uses modes 3, 5, 7 only
     // https://github.com/pybricks/pybricks-micropython/blob/master/pybricks/util_pb/pb_device.h
@@ -99,9 +99,9 @@ class ColorSensor : public BaseSensor {
     };
 
 public:
-    ColorSensor();
-    ColorSensor(uint8_t *pSensorColor, uint16_t *pRGB_I, uint16_t *pHSV);
-    virtual ~ColorSensor();
+    Colour_Sensor();
+    Colour_Sensor(uint8_t *pSensorColor, uint16_t *pRGB_I, uint16_t *pHSV);
+    virtual ~Colour_Sensor();
 
     uint16_t getSensorIRCode();
     void setSensorRGB_I(uint16_t *pData);

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef BASESENSOR_H
-#define BASESENSOR_H
+#ifndef BASE_SENSOR_H
+#define BASE_SENSOR_H
 
 #include "lego_uart.h"
 #include "Arduino.h"
@@ -35,10 +35,10 @@
  * @param m_lastAckTick Time flag used to detect disconnection from the hub.
  * @param m_connected Connection flag.
  */
-class BaseSensor {
+class Base_Sensor {
 
 public:
-    BaseSensor();
+    Base_Sensor();
     // virtual ~BasicSensor(){}
     void process();
     bool isConnected();
@@ -66,4 +66,4 @@ protected:
     bool m_connected;
 };
 
-#endif // BASESENSOR_H
+#endif // BASE_SENSOR_H
