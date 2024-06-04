@@ -16,18 +16,18 @@
 #ifndef ABW_IR_RING_H
 #define ABW_IR_RING_H
 
-#include <TSSP_Array.h>
-#include <Colour_Sensor.h>
+#include "TSSP_Array.h"
+#include "Colour_Sensor.h"
 
 class IR_Ring {
 public:
     // Main Functions
-    IR_Ring();
+    IR_Ring() {}
     void init();
     void update();
 
     // Debug Functions
-    uint8_t get_direction_advanced();
+    uint16_t get_direction_advanced();
     uint8_t get_direction_simple();
     uint8_t get_strength();
     

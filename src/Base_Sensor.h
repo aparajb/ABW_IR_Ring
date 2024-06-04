@@ -22,6 +22,9 @@
 
 #include "lego_uart.h"
 #include "Arduino.h"
+#include "Debug.h"
+
+#define _(type) static_cast<type>
 
 
 /**

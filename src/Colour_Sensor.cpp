@@ -136,7 +136,7 @@ void Colour_Sensor::setSensorAmbientLight(uint8_t *pData){
 
 /**
  * @brief Send initialization sequences for the current sensor.
- * @see https://github.com/pybricks/pybricks-micropython/lib/pbio/test/src/uartdev.c
+ * @see https://github.com/pybricks/pybricks-micropython/lib/pbio/test/src/uartdev.
  */
 void Colour_Sensor::commSendInitSequence(){
     // TODO: put all this strings into flash via PROGMEM
@@ -267,16 +267,18 @@ void Colour_Sensor::commSendInitSequence(){
  *      queries from the hub takes longer than 200ms, a disconnection
  *      will be performed here.
  */
-void Colour_Sensor::handleModes(){
+void Colour_Sensor::handleModes() {
     if (Serial1.available() == 0)
         return;
 
     unsigned char header;
     unsigned char mode;
     header = Serial1.read();
-
-    Serial.print("<\tHeader ");
-    Serial.println(header, HEX);
+    
+    #if DEBUG_COMMS
+        Serial.print("<\tHeader ");
+        Serial.println(header, HEX);
+    #endif
 
     if (header == 0x02) { // NACK
         m_lastAckTick = millis();
@@ -291,12 +293,16 @@ void Colour_Sensor::handleModes(){
         size_t ret = Serial1.readBytes(m_rxBuf, 2);
         if (ret < 2) {
             // check if all expected bytes are received without timeout
-            Serial.print("incomplete 0x43 message");
+            #if DEBUG_COMMS
+                Serial.print("incomplete 0x43 message");
+            #endif
             return;
         }
         mode = m_rxBuf[0];
-        Serial.print("<\tAsked mode ");
-        Serial.println(mode);
+        #if DEBUG_COMMS
+            Serial.print("<\tAsked mode ");
+            Serial.println(mode);
+        #endif
 
         this->m_currentExtMode = (mode < 8) ? EXT_MODE_0 : EXT_MODE_8;
 
@@ -319,18 +325,11 @@ void Colour_Sensor::handleModes(){
             case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__HSV:
                 this->sensorHSVMode();
                 break;
-            // case Colour_Sensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__SHSV:
-            //    this->sensorSHSVMode();
-            //    break;
-            // #ifdef DEBUG
-            // // This implementation doesn't follow Lego's one
-            // case ColorDistanceSensor::PBIO_IODEV_MODE_PUP_COLOR_SENSOR__DEBUG:
-            //     this->sensorDebugMode();
-            //     break;
-            // #endif
             default:
-                Serial.print("unknown R mode: ");
-                Serial.println(mode, HEX);
+                #if DEBUG_COMMS
+                    Serial.print("unknown R mode: ");
+                    Serial.println(mode, HEX);
+                #endif
                 break;
         }
     } else if (header == 0x46) {
@@ -355,7 +354,7 @@ void Colour_Sensor::handleModes(){
         // Read the remaining bytes after the header (cheksum included)
         // Data will be in the indexes [0;msg_size-2]
         ret = Serial1.readBytes(m_rxBuf, msg_size - 1);
-        if ((signed)(ret) != msg_size - 1)
+        if (_(signed)(ret) != msg_size - 1)
             return;
 
         switch(mode) {
@@ -363,8 +362,10 @@ void Colour_Sensor::handleModes(){
                 this->setLEDBrightnessesMode();
                 break;
             default:
-                Serial.print("unknown W mode: ");
-                Serial.println(mode, HEX);
+                #if DEBUG_COMMS
+                    Serial.print("unknown W mode: ");
+                    Serial.println(mode, HEX);
+                #endif
                 break;
         }
     } else if (header == 0x4C) {
@@ -400,7 +401,9 @@ void Colour_Sensor::handleModes(){
         size_t ret = Serial1.readBytes(m_rxBuf, 9);
         if (ret < 9) {
             // check if all expected bytes are received without timeout
-            Serial.print("incomplete 0x5C message");
+            #if DEBUG_COMMS
+                Serial.println("incomplete 0x5C message");
+            #endif
             return;
         }
 
@@ -440,12 +443,14 @@ void Colour_Sensor::setLEDBrightnessesMode() {
     this->m_LEDBrightnesses[1] = m_rxBuf[1];
     this->m_LEDBrightnesses[2] = m_rxBuf[2];
 
-    Serial.print("LEDBrightnesses set (Left,Bottom,Right): ");
-    Serial.print(this->m_LEDBrightnesses[0], HEX);
-    Serial.print(", ");
-    Serial.print(this->m_LEDBrightnesses[1], HEX);
-    Serial.print(", ");
-    Serial.println(this->m_LEDBrightnesses[2], HEX);
+    #if DEBUG_COMMS
+        Serial.print("LEDBrightnesses set (Left,Bottom,Right): ");
+        Serial.print(this->m_LEDBrightnesses[0], HEX);
+        Serial.print(", ");
+        Serial.print(this->m_LEDBrightnesses[1], HEX);
+        Serial.print(", ");
+        Serial.println(this->m_LEDBrightnesses[2], HEX);
+    #endif
 
     if (this->m_pLEDBrightnessesfunc != nullptr)
         this->m_pLEDBrightnessesfunc(this->m_LEDBrightnesses);
@@ -518,7 +523,9 @@ void Colour_Sensor::sensorRGB_IMode(){
 void Colour_Sensor::sensorHSVMode(){
     // Mode 6
     // Send data; payload size = 6, but total msg_size = 10
-    Serial.println("Mode 6");
+    #if DEBUG_COMMS
+        Serial.println("Mode 6");
+    #endif
 
     // Send data
     m_txBuf[0] = getHeader(lump_msg_type_t::LUMP_MSG_TYPE_DATA, 6, 10); // header: 0xde
@@ -586,7 +593,9 @@ void Colour_Sensor::sensorDebugMode(){
  */
 void Colour_Sensor::defaultCombosMode(){
     // Send data; payload size = 8, but total msg_size = 10
-    Serial.println("Default combos mode");
+    #if DEBUG_COMMS
+        Serial.println("Default combos mode");
+    #endif
     // Send data
     m_txBuf[0] = getHeader(lump_msg_type_t::LUMP_MSG_TYPE_DATA, 0, 10); // header: 0xd8
     m_txBuf[1] = *this->m_reflectedLight;                               // mode 1 value 0

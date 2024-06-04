@@ -96,7 +96,9 @@ void Base_Sensor::commWaitForHubIdle(){
  *          - Start UART connection at 115200 bauds
  */
 void Base_Sensor::connectToHub() {
-    Serial.println("INIT SENSOR");
+    #if (DEBUG_COMMS || DEBUG)
+        Serial.println("INIT SENSOR");
+    #endif
 
     // Wait for HUB to idle it's TX pin (idle = High)
     // TODO: ces bidouilles émettent b'\x00\x00' avant tout choses sur la ligne série !!
@@ -113,9 +115,11 @@ void Base_Sensor::connectToHub() {
             // read the incoming byte
             unsigned char dat = Serial1.read();
             if (dat == 0x04) { // ACK
-                //Serial.println("Connection established !");
+                #if (DEBUG || DEBUG_COMMS)
+                    Serial.println("Connection established");
+                #endif
                 Serial1.begin(115200);
-                m_connected   = true;
+                m_connected = true;
                 m_lastAckTick = millis();
                 break;
             }
@@ -165,8 +169,10 @@ void Base_Sensor::process(){
 
     // Check disconnection from the Hub and go in reset/init mode if needed
     if (millis() - m_lastAckTick > 200) {
-        Serial.print("Disconnect; Too much time since last NACK - ");
-        Serial.println(millis() - m_lastAckTick);
+        #if (DEBUG || DEBUG_COMMS)
+            Serial.print("Disconnect; Too much time since last NACK - ");
+            Serial.println(millis() - m_lastAckTick);
+        #endif
         m_connected = false;
     }
 }
@@ -222,7 +228,7 @@ void Base_Sensor::parseHeader(const uint8_t& header, uint8_t& mode, uint8_t& msg
  */
 uint8_t Base_Sensor::getMsgSize(const uint8_t& header){
     // Simplified version that implicitly asserts that msg_type is LUMP_MSG_TYPE_DATA
-    return (uint8_t) ((1 << (((header) >> 3) & 0x7)) + 2);
+    return _(uint8_t) ((1 << (((header) >> 3) & 0x7)) + 2);
 }
 
 

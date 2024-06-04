@@ -30,6 +30,4 @@
 		    for(int q = upper; q >= lower; q--) { \
 			    *(a + q + 1) = *(a + q); }}}
 
-
-
 #endif // CONFIG_H

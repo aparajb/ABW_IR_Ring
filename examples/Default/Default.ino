@@ -4,6 +4,7 @@
 IR_Ring ring;
 
 void setup() {
+    Serial.begin(9600);
     ring.init();
 }
 

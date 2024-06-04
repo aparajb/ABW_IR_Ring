@@ -2,18 +2,18 @@
 #define TSSP_ARRAY_H
 
 #include "Arduino.h"
-#include "util/Config.h"
+#include "Config.h"
 
 class TSSP_Array {
 public:
     TSSP_Array() {}
     void init();
     void update();
-    uint8_t get_direction_advanced();
+    uint16_t get_direction_advanced();
     uint8_t get_direction_simple();
     uint8_t get_strength();
 private:
-    uint8_t direction_advanced;
+    uint16_t direction_advanced;
     uint8_t direction_simple;
     uint8_t strength;
     uint8_t pins[TSSP_NUM] = {PIN1, PIN2, PIN3, PIN4, PIN5, PIN6, PIN7, PIN8, PIN9, PIN10, PIN11, PIN12};
